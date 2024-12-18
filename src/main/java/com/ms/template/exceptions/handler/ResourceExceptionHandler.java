@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class ResourceExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<StandardError> notFoundException(ApiException exception) {
+    public ResponseEntity<StandardError> handler(ApiException exception) {
         var error = StandardError.builder()
                 .message(exception.getMessage())
                 .code(exception.getCode())
