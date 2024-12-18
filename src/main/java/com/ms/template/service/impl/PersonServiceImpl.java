@@ -2,11 +2,14 @@ package com.ms.template.service.impl;
 
 import com.ms.template.controller.request.PersonRequestBody;
 import com.ms.template.controller.response.PersonResponseBody;
+import com.ms.template.exceptions.ApiException;
+import com.ms.template.exceptions.handler.PersonExceptionEnum;
 import com.ms.template.mapper.PersonMapper;
 import com.ms.template.repository.PersonRepository;
 import com.ms.template.service.PersonService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,13 +33,18 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonResponseBody savePerson(final PersonRequestBody request) {
-        var entity = repository.save(mapper.toEntity(request));
-        return mapper.toResponseBody(entity);
+        try {
+            var entity = repository.save(mapper.toEntity(request));
+            return mapper.toResponseBody(entity);
+        } catch (DataIntegrityViolationException exception) {
+            throw new ApiException(PersonExceptionEnum.EMAIL_ALREADY_EXISTS);
+        }
     }
 
     @Override
     public PersonResponseBody getByEmail(final String email) {
-        var entity = repository.findByEmail(email).orElseThrow(() -> new RuntimeException("Not found"));
+        var entity = repository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(PersonExceptionEnum.PERSON_NOT_FOUND));
         return mapper.toResponseBody(entity);
     }
 
